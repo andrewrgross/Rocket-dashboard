@@ -63,6 +63,7 @@ GPIO.setup(switch1,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch2,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 #GPIO.setup(button4,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch1,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(switch4,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(led1,GPIO.OUT)
 
 screenstate = 0
@@ -82,7 +83,6 @@ current_window = 1
 def PlayVideo(video_path):
     video=cv2.VideoCapture(video_path)
     player = MediaPlayer(video_path)
-
     while True:
         grabbed, frame=video.read()
         audio_frame, val = player.get_frame()
@@ -95,13 +95,10 @@ def PlayVideo(video_path):
         cv2.moveWindow("Video", 0, 0)
         cv2.imshow("Video", frame)
         if val != 'eof' and audio_frame is not None:
-            #audio
             img, t = audio_frame
     video.release()
     cv2.destroyAllWindows()
-
 #PlayVideo(video_path)
-
 
 print('Setup complete. Running test')
 
@@ -122,8 +119,10 @@ try:
                                 print('ss = 0')
 				### Draw dashboard
                                 screen.fill((255,255,250))
-                                pygame.draw.circle(screen, (208,255,230), (370,150), 17)
-                                pygame.draw.circle(screen, (0, 255, 10), (370,150), 18, 6)
+                                pygame.draw.circle(screen, (208,255,230), (150,370), 30)
+                                pygame.draw.circle(screen, (0, 255, 10), (150,370), 31, 6)
+                                pygame.draw.circle(screen, (255,230,210), (300,370), 30)
+                                pygame.draw.circle(screen, (100, 100, 100), (300,370), 31, 7)
                                 pygame.draw.rect(screen, (200,200,255), (300,100,100,600), 6)
                                 screen.blit(win_orbit,(30,7))
                                 screenstate = 2
@@ -135,7 +134,7 @@ try:
                                 PlayVideo(video_file)
                                 pygame.init()
                                 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-                                screen.blit(menu-control, (0,0))
+                                screen.blit(menucontrol, (0,0))
   #                              pygame.display.update()
                         elif screenstate == 2:
                                 screen.blit(menucontrol, (0,0))
@@ -169,7 +168,17 @@ try:
                 if switch1state != GPIO.input(switch1):
                          print('switch1 thrown')
                          GPIO.output(led1, switch1state)
+                         if switchstate == True:
+                                 pygame.draw.circle(screen, (208,255,230), (150,370), 30)
+                         else:
+                                 pygame.draw.circle(screen, (10, 255, 15), (150,370), 30)
+                         pygame.draw.circle(screen, (0, 255, 10), (150,370), 31, 6)
+                         pygame.display.update()
+                         switch1state = GPIO.input(switch1)
                 ### Switch2: Light 2
+                if GPIO.input(switch2) != switch2state:
+                         print('Switch2 thrown')
+                         switch2state = GPIO.input(switch2)
                 ###
   #              else:
  #                       pass
