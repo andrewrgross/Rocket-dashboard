@@ -43,7 +43,7 @@ video_list = full_video_list[0:3]
 ## Pins
 button1 = 2
 button2 = 3
-button3 = 10
+button3 = 25
 #button4
 switch1 = 4
 switch2 = 17
@@ -59,10 +59,11 @@ GPIO.setmode(GPIO.BCM)
 #GPIO.setwarnings(False)
 GPIO.setup(button1,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(button2,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(button3,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch1,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch2,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 #GPIO.setup(button4,GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(switch1,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(switch3,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch4,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(led1,GPIO.OUT)
 
@@ -70,10 +71,14 @@ screenstate = 0
 
 switch1state = True
 switch2state = True
+switch3state = True
+switch4state = True
 light1color = (230,240,230)
 light2color = (230,230,240)
 light3color = (240,230,230)
-switch1_color = (235,182,219)
+switch4color = (130, 130, 130)
+rollingvalue = 20
+modifier = 1
 
 window_list = (win_orbit, win_mars, win_space, win_hole, win_vents)
 current_window = 1
@@ -119,22 +124,26 @@ try:
                                 print('ss = 0')
 				### Draw dashboard
                                 screen.fill((255,255,250))
-                                pygame.draw.circle(screen, (208,255,230), (150,370), 30)
-                                pygame.draw.circle(screen, (0, 255, 10), (150,370), 31, 6)
-                                pygame.draw.circle(screen, (255,230,210), (300,370), 30)
-                                pygame.draw.circle(screen, (100, 100, 100), (300,370), 31, 7)
-                                pygame.draw.rect(screen, (200,200,255), (300,100,100,600), 6)
+                                pygame.draw.circle(screen, (230,255,230), (130,370), 50)
+                                pygame.draw.circle(screen, (  0,  0,  0), (130,370), 51, 15) # Ring
+                                pygame.draw.circle(screen, (255,230,210), (370,370), 50)
+                                pygame.draw.circle(screen, (  0,  0,  0), (370,370), 51, 15)
+                                pygame.draw.circle(screen, (255,230,210), (610,370), 50)
+                                pygame.draw.circle(screen, (  0,  0,  0), (610,370), 51, 15)
+                                pygame.draw.rect(screen, (100,100,100), (50,300,640,150), 26)
                                 screen.blit(win_orbit,(30,7))
                                 screenstate = 2
                               #  pygame.display.update()
                                 time.sleep(0.6)
                         elif screenstate == 1:	# If on the radio menu screen:
+                                chirp.play()
                                 pygame.quit()
                                 video_file = video_list[0]
                                 PlayVideo(video_file)
                                 pygame.init()
                                 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
                                 screen.blit(menucontrol, (0,0))
+                                screenstate = 0
   #                              pygame.display.update()
                         elif screenstate == 2:
                                 screen.blit(menucontrol, (0,0))
@@ -166,20 +175,82 @@ try:
                         time.sleep(0.5)
                 ### Switch1: Light 1
                 if switch1state != GPIO.input(switch1):
+                         beep2.play()
                          print('switch1 thrown')
-                         GPIO.output(led1, switch1state)
-                         if switchstate == True:
-                                 pygame.draw.circle(screen, (208,255,230), (150,370), 30)
+#                         GPIO.output(led1, switch1state)
+                         if switch1state == True:
+                                 light1color = (255,94,0)  # Safety Orange
                          else:
-                                 pygame.draw.circle(screen, (10, 255, 15), (150,370), 30)
-                         pygame.draw.circle(screen, (0, 255, 10), (150,370), 31, 6)
-                         pygame.display.update()
+                                 light1color = (255,231,184) # Peach
+                         if screenstate == 2:
+                                 pygame.draw.circle(screen, (light1color), (130,370), 40)
+                                 pygame.draw.circle(screen, (150,150,150), (130,370), 42, 6)
+
+                                 print("Updating because we're on screenstate2")
+                                 pygame.display.update()
                          switch1state = GPIO.input(switch1)
                 ### Switch2: Light 2
                 if GPIO.input(switch2) != switch2state:
+                         biz.play()
                          print('Switch2 thrown')
+#                         GPIO.output(led1, switch1state)
+                         if switch2state == True:
+                                 light2color = (68,0,255)
+#                                 pygame.draw.circle(screen, (208,255,230), (370,370), 40)
+                         else:
+                                 light2color = (201,212,255)
+#                                 pygame.draw.circle(screen, (10, 255, 15), (370,370), 40)
+#                         pygame.draw.circle(screen, (0, 255, 10), (370,370), 41, 6)
+                         if screenstate == 2:
+                                 pygame.draw.circle(screen, light2color, (370,370), 40)
+                                 pygame.draw.circle(screen, (100,100,100), (370,370), 42, 6)
+                                 pygame.display.update()
                          switch2state = GPIO.input(switch2)
-                ###
+
+                ### Switch3
+                if GPIO.input(switch3) != switch3state:
+                         boop.play()
+                         print('Switch3 thrown')
+                         if switch3state == True:
+                                 switch3color = (10,255,15)
+#                                 pygame.draw.circle(screen, (208,255,230), (610,370), 40)
+                         else:
+ #                                pygame.draw.circle(screen, (10, 255, 15), (610,370), 40)
+                                  switch3color = (208, 255, 230)
+                         pygame.draw.circle(screen, (switch3color), (610,370), 40)
+                         pygame.draw.circle(screen, (0, 255, 10), (610,370), 41, 6)
+                         if screenstate == 2:
+                                 pygame.display.update()
+                         switch3state = GPIO.input(switch3)
+                ### Switch4
+                if GPIO.input(switch4) != switch4state:
+                         bip.play()
+                         print('Switch4 thrown!')
+                         if switch4state == True:
+                                 switch4color = (230,  0,  0)
+#                                 pygame.draw.rect(screen, (20,20,255), (50,300,650,150), 16)
+                         else:
+                                 switch4color = (255,150,130)
+ #                                pygame.draw.rect(screen, (200,200,255), (50,300,650,150), 16)
+                         if screenstate == 2:
+                                 print('Updating to new color')
+                                 pygame.draw.rect(screen, (switch4color), (50,300,640,150), 16)
+                                 pygame.display.update()
+                         time.sleep(0.5)
+                         switch4state = GPIO.input(switch4)
+                ### Button3
+#                if GPIO.input(button3) == False:
+ #                        if rollingvalue == 254:
+  #                               modifier = -1
+   #                      if rollingvalue == 5:
+    #                             modifier = 1
+     #                    rollingvalue = rollingvalue + modifier
+      #                   button3color = (10,rollingvalue,0)
+       #                  pygame.draw.polygon(screen, button3color, [(600,150),(680,200),(680,100)])
+        #                 pygame.display.update()
+
+#                         pygame.draw.rect(screen, (200,200,255), (100,300,600,150), 6)
+
   #              else:
  #                       pass
 #        pass
