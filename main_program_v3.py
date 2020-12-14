@@ -8,6 +8,7 @@ import RPi.GPIO as GPIO
 import glob
 import numpy as np
 from ffpyplayer.player import MediaPlayer
+import vlc
 
 #from os import listdir
 #from os.path import isfile, join
@@ -59,7 +60,7 @@ GPIO.setmode(GPIO.BCM)
 #GPIO.setwarnings(False)
 GPIO.setup(button1,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(button2,GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(button3,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#GPIO.setup(button3,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch1,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch2,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 #GPIO.setup(button4,GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -139,7 +140,14 @@ try:
                                 chirp.play()
                                 pygame.quit()
                                 video_file = video_list[0]
-                                PlayVideo(video_file)
+#                                PlayVideo(video_file)
+                                print('Playing '+video_file)
+                                media_player = vlc.MediaPlayer() 
+                                #media_player = vlc.MediaPlayer() 
+                                vid = vlc.Media(video_file)
+                                media_player.set_media(vid)
+                                media_player.play()
+
                                 pygame.init()
                                 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
                                 screen.blit(menucontrol, (0,0))
@@ -258,6 +266,7 @@ try:
 # Set up the drawing window
 #pygame.quit()
 except:
+        GPIO.cleanup()
         print('exception called?')
         raise
 #        quit()
