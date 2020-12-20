@@ -39,7 +39,10 @@ buzz = pygame.mixer.Sound('/home/pi/Rocket-dashboard/Sounds/buzz.wav')
 chirp = pygame.mixer.Sound('/home/pi/Rocket-dashboard/Sounds/chirp.wav')
 ## Videos
 full_video_list = glob.glob('/home/pi/Rocket-dashboard/Videos/*')
-video_list = full_video_list[0:3]
+video_list = full_video_list[0:4]
+
+color_list = ((255,0,255), (255,0,127), (255,0,0), (255,127,0))
+### Add a system for sorting just the most recent for videos
 
 ## Pins
 button1 = 2
@@ -66,7 +69,7 @@ GPIO.setup(switch2,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 #GPIO.setup(button4,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch3,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch4,GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(led1,GPIO.OUT)
+#GPIO.setup(led1,GPIO.OUT)
 
 screenstate = 0
 
@@ -137,6 +140,26 @@ try:
                               #  pygame.display.update()
                                 time.sleep(0.6)
                         elif screenstate == 1:	# If on the radio menu screen:
+
+                                screen.fill((10,10,10))
+                                font = pygame.font.SysFont(None, 66)
+                                font2 = pygame.font.SysFont(None, 50)
+                                text1 = font.render(video_list[0].split('/')[-1], True, color_list[0])
+                                text2 = font2.render(video_list[1].split('/')[-1], True, color_list[1])
+                                text3 = font2.render(video_list[2].split('/')[-1], True, color_list[2])
+                                text4 = font2.render(video_list[3].split('/')[-1], True, color_list[3])
+                                screen.blit(text1, (30, 50))
+                                screen.blit(text2, (60, 160))
+                                screen.blit(text3, (60, 260))
+                                screen.blit(text4, (60, 360))
+                                pygame.draw.rect(screen, (230,230,200), (10,10,640,130), 9)
+
+                                screenstate = 3
+  #                              pygame.display.update()
+                        elif screenstate == 2:
+                                screen.blit(menucontrol, (0,0))
+                                screenstate = 0
+                        elif screenstate == 3:		# If on the radio select screen, play selected video
                                 chirp.play()
                                 pygame.quit()
                                 video_file = video_list[0]
@@ -153,13 +176,11 @@ try:
                                 screen.blit(menucontrol, (0,0))
                                 screenstate = 0
   #                              pygame.display.update()
-                        elif screenstate == 2:
-                                screen.blit(menucontrol, (0,0))
-                                screenstate = 0
                         pygame.display.update()
                         time.sleep(0.5)
                 ### Button2: Cycle
                 if GPIO.input(button2) == False:
+                        bloop.play()
                         print('b2 pressed')
                         if GPIO.input(button1) == False:
                                 print('b2-1 pressed')
@@ -177,6 +198,24 @@ try:
                                         current_window = 0
                                 screen.blit(window_list[current_window], (30,7))
                                 print(window_list[current_window])
+                        elif screenstate == 3: # If on video select screen
+                                ### Rotate video order and color
+                                video_list = (video_list[1], video_list[2], video_list[3], video_list[0])
+                                color_list = (color_list[1], color_list[2], color_list[3], color_list[0])
+
+                                screen.fill((10,10,10))
+                                font = pygame.font.SysFont(None, 66)
+                                font2 = pygame.font.SysFont(None, 50)
+                                text1 = font.render(video_list[0].split('/')[-1], True, color_list[0])
+                                text2 = font2.render(video_list[1].split('/')[-1], True, color_list[1])
+                                text3 = font2.render(video_list[2].split('/')[-1], True, color_list[2])
+                                text4 = font2.render(video_list[3].split('/')[-1], True, color_list[3])
+                                screen.blit(text1, (30, 50))
+                                screen.blit(text2, (60, 160))
+                                screen.blit(text3, (60, 260))
+                                screen.blit(text4, (60, 360))
+                                pygame.draw.rect(screen, (230,230,200), (10,10,640,130), 9)
+
                         else:
                                 pass
                         pygame.display.update()

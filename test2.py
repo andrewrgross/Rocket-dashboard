@@ -1,14 +1,15 @@
 ### main_program_v3.py -- 12-02-2020 -- Andrew R Gross
 
 ### Libraries
-import os
 import pygame
 import time
 import cv2
 import RPi.GPIO as GPIO
 import glob
 import numpy as np
+from ffpyplayer.player import MediaPlayer
 import vlc
+import subprocess
 
 #from os import listdir
 #from os.path import isfile, join
@@ -40,7 +41,9 @@ chirp = pygame.mixer.Sound('/home/pi/Rocket-dashboard/Sounds/chirp.wav')
 ## Videos
 full_video_list = glob.glob('/home/pi/Rocket-dashboard/Videos/*')
 video_list = full_video_list[0:4]
-color_list = ((255,0,255), (255,0,127), (255,0,0), (255,128,0))
+
+color_list = ((255,0,255), (255,0,127), (255,0,0), (255,127,0))
+### Add a system for sorting just the most recent for videos
 
 ## Pins
 button1 = 2
@@ -67,7 +70,7 @@ GPIO.setup(switch2,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 #GPIO.setup(button4,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch3,GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(switch4,GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(led1,GPIO.OUT)
+#GPIO.setup(led1,GPIO.OUT)
 
 screenstate = 0
 
@@ -87,6 +90,42 @@ current_window = 1
 # 
 #ffpyplayer for playing audio
 
+def PlayVideo(video_path):
+	cap = cv2.VideoCapture(video_path)
+	if (cap.isOpened()==False):
+		print('Error opening video file')
+	while(cap.isOpened()):
+		### capture frame-by-frame
+		ret, frame = cap.read()
+		if ret == True:
+			cv2.imshow('Frame', frame)
+			if GPIO.input(button1) == False:
+				break
+		else:
+			break
+	cap.release()
+	cv2.destroyAllWindows()
+	print('video complete')
+
+"""
+    video=cv2.VideoCapture(video_path)
+    player = MediaPlayer(video_path)
+    while True:
+        grabbed, frame=video.read()
+        audio_frame, val = player.get_frame()
+        if not grabbed:
+            print("End of video")
+            break
+        if cv2.waitKey(20) & 0xFF == ord("q"):
+            break
+        cv2.namedWindow("Video")
+        cv2.moveWindow("Video", 0, 0)
+        cv2.imshow("Video", frame)
+        if val != 'eof' and audio_frame is not None:
+            img, t = audio_frame
+    video.release()
+    cv2.destroyAllWindows()
+"""
 #PlayVideo(video_path)
 
 print('Setup complete. Running test')
@@ -117,74 +156,52 @@ try:
                                 pygame.draw.rect(screen, (100,100,100), (50,300,640,150), 26)
                                 screen.blit(win_orbit,(30,7))
                                 screenstate = 2
-                                print('Changed ss to 2')
                               #  pygame.display.update()
                                 time.sleep(0.6)
                         elif screenstate == 1:	# If on the radio menu screen:
-                                print('ss = 1')
-                                ### Show video file list
-                                time.sleep(0.3)
 
-                                font = pygame.font.SysFont(None, 60)
-                                first_vid = font.render(str(video_list[0].split('/')[-1] ), True, color_list[0])
-                                second_vid = font.render(str(video_list[1].split('/')[-1] ), True, color_list[1])
-                                third_vid = font.render(str(video_list[2].split('/')[-1] ), True, color_list[2])
-                                fourth_vid = font.render(str(video_list[3].split('/')[-1] ), True, color_list[3])
-
-                                #img = font.render(sysfont, True, RED)
-#                                rect = first_vid.get_rect()
- #                               pygame.draw.rect(rect, (200,200,200), rect, 3)
                                 screen.fill((10,10,10))
-                                screen.blit(first_vid, (20, 20))
-                                screen.blit(second_vid, (20, 120))
-                                screen.blit(third_vid, (20, 220))
-                                screen.blit(fourth_vid, (20,320))
-                                pygame.draw.rect(screen, (200,200,200), (10,10,640,100), 9)
-                                pygame.display.update()
-                                screenstate = 3
-                                print('Changed ss to 3')
+                                font = pygame.font.SysFont(None, 66)
+                                font2 = pygame.font.SysFont(None, 50)
+                                text1 = font.render(video_list[0].split('/')[-1], True, color_list[0])
+                                text2 = font2.render(video_list[1].split('/')[-1], True, color_list[1])
+                                text3 = font2.render(video_list[2].split('/')[-1], True, color_list[2])
+                                text4 = font2.render(video_list[3].split('/')[-1], True, color_list[3])
+                                screen.blit(text1, (30, 50))
+                                screen.blit(text2, (60, 160))
+                                screen.blit(text3, (60, 260))
+                                screen.blit(text4, (60, 360))
+                                pygame.draw.rect(screen, (230,230,200), (10,10,640,130), 9)
 
-                        elif screenstate == 2: # If on the dashboard, go back to control menu
+                                screenstate = 3
+  #                              pygame.display.update()
+                        elif screenstate == 2:
                                 screen.blit(menucontrol, (0,0))
                                 screenstate = 0
-                                print('Changed ss to 0')
-                        elif screenstate == 3: # If on the video select screen, play selected video
-#                                time.sleep(5)
-#                                buzz.play()
+                        elif screenstate == 3:		# If on the radio select screen, play selected video
+                              #  chirp.play()
                                 pygame.quit()
                                 video_file = video_list[0]
 #                                PlayVideo(video_file)
                                 print('Playing '+video_file)
-                                video = cv2.VideoCapture(video_file)
-                                video.set(cv2.CAP_PROP_POS_AVI_RATIO,1)
-                                duration = video.get(cv2.CAP_PROP_POS_MSEC)
-
-#                                media_player = vlc.MediaPlayer() 
+                                subprocess.call(['vlc',video_file,'--play-and-exit'])
+#                                PlayVideo(video_list[0])
+                               # media_player = vlc.MediaPlayer() 
                                 #media_player = vlc.MediaPlayer() 
-#                                vid = vlc.Media(video_file)
-#                                media_player.set_media(vid)
-#                                media_player.play()
-                                print('Waiting ' + str(duration) + ' seconds')
+                         #       vid = vlc.Media(video_file)
+                          #      media_player.set_media(vid)
+                           #     media_player.play()
 
-                                os.system('vlc ' + video_file + ' --play-and-exit')
-
-                                time.sleep(duration+0.5)
                                 pygame.init()
                                 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
                                 screen.blit(menucontrol, (0,0))
                                 screenstate = 0
   #                              pygame.display.update()
-                        elif screenstate == 2:
-                                screen.blit(menucontrol, (0,0))
-                                screenstate = 0
-
-
-
                         pygame.display.update()
                         time.sleep(0.5)
                 ### Button2: Cycle
                 if GPIO.input(button2) == False:
-                        chirp.play()
+                        bloop.play()
                         print('b2 pressed')
                         if GPIO.input(button1) == False:
                                 print('b2-1 pressed')
@@ -203,31 +220,27 @@ try:
                                 screen.blit(window_list[current_window], (30,7))
                                 print(window_list[current_window])
                         elif screenstate == 3: # If on video select screen
-
+                                ### Rotate video order and color
                                 video_list = (video_list[1], video_list[2], video_list[3], video_list[0])
                                 color_list = (color_list[1], color_list[2], color_list[3], color_list[0])
 
-                                font = pygame.font.SysFont(None, 60)
-                                first_vid = font.render(str(video_list[0].split('/')[-1] ), True, color_list[0])
-                                second_vid = font.render(str(video_list[1].split('/')[-1] ), True, color_list[1])
-                                third_vid = font.render(str(video_list[2].split('/')[-1] ), True, color_list[2])
-                                fourth_vid = font.render(str(video_list[3].split('/')[-1] ), True, color_list[3])
-
-                                #img = font.render(sysfont, True, RED)
                                 screen.fill((10,10,10))
-                                screen.blit(first_vid, (20, 20))
-                                screen.blit(second_vid, (20, 120))
-                                screen.blit(third_vid, (20, 220))
-                                screen.blit(fourth_vid, (20, 320))
-                                pygame.draw.rect(screen, (200,200,200), (10,10,640,100), 9)
+                                font = pygame.font.SysFont(None, 66)
+                                font2 = pygame.font.SysFont(None, 50)
+                                text1 = font.render(video_list[0].split('/')[-1], True, color_list[0])
+                                text2 = font2.render(video_list[1].split('/')[-1], True, color_list[1])
+                                text3 = font2.render(video_list[2].split('/')[-1], True, color_list[2])
+                                text4 = font2.render(video_list[3].split('/')[-1], True, color_list[3])
+                                screen.blit(text1, (30, 50))
+                                screen.blit(text2, (60, 160))
+                                screen.blit(text3, (60, 260))
+                                screen.blit(text4, (60, 360))
+                                pygame.draw.rect(screen, (230,230,200), (10,10,640,130), 9)
 
-                                pygame.display.update()
                         else:
                                 pass
                         pygame.display.update()
                         time.sleep(0.5)
-
-
                 ### Switch1: Light 1
                 if switch1state != GPIO.input(switch1):
                          beep2.play()
@@ -264,7 +277,7 @@ try:
 
                 ### Switch3
                 if GPIO.input(switch3) != switch3state:
-                         bip.play()
+                         boop.play()
                          print('Switch3 thrown')
                          if switch3state == True:
                                  switch3color = (10,255,15)
