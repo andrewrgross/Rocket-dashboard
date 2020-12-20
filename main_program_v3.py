@@ -9,7 +9,11 @@ import glob
 import numpy as np
 from ffpyplayer.player import MediaPlayer
 import vlc
-
+import io,sys,os,subprocess
+#from tkFileDialog import askopenfilename
+global process
+#name= askopenfilename(filetypes=[("Video Files","*.h264")])
+#subprocess.call(['vlc',name,'--play-and-exit'])
 #from os import listdir
 #from os.path import isfile, join
 
@@ -160,16 +164,16 @@ try:
                                 screen.blit(menucontrol, (0,0))
                                 screenstate = 0
                         elif screenstate == 3:		# If on the radio select screen, play selected video
-                                chirp.play()
+                                #chirp.play()
                                 pygame.quit()
-                                video_file = video_list[0]
+                                #video_file = video_list[0]
 #                                PlayVideo(video_file)
                                 print('Playing '+video_file)
-                                media_player = vlc.MediaPlayer() 
                                 #media_player = vlc.MediaPlayer() 
-                                vid = vlc.Media(video_file)
-                                media_player.set_media(vid)
-                                media_player.play()
+                                #media_player = vlc.MediaPlayer() 
+                                #vid = vlc.Media(video_file)
+                                #media_player.set_media(vid)
+                                #media_player.play()
 
                                 pygame.init()
                                 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
