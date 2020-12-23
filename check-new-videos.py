@@ -15,7 +15,8 @@ global process
 ### Declare variables and assets
 ## Images
 searching = pygame.image.load('/home/pi/Rocket-dashboard/Images/searching-for-transmission.png')
-play_latest = pygame.image.load('/home/pi/Rocket-dashboard/Images/play-latest.png')
+play_latest = pygame.image.load('/home/pi/Rocket-dashboard/Images/new-message.png')
+proceed = pygame.image.load('/home/pi/Rocket-dashboard/Images/continue.png')
 
 """
 ## Sounds
@@ -61,20 +62,11 @@ screenstate = 0
 print('Setup complete. Running test')
 
 ### Main Program Body
-
-#screen.blit(menucontrol, (0,0))
 pygame.init()
 screen = pygame.display.set_mode((0,0), pygame.FULLSCREEN)
 screen.blit(searching, (0,0))
-#screen.fill((0, 102, 51))
 
 font = pygame.font.SysFont(None, 50)
-#font2 = pygame.font.SysFont(None, 50)
-#text1 = font.render('CHECKING FOR NEW MESSAGES', True, (152,255,54))
-#screen.blit(text1, (50, 140))
-#pygame.display.update()
-
-#time.sleep(5)
 
 screen.blit(play_latest, (0,0))
 new_video = (1,2)
@@ -84,12 +76,10 @@ if len(new_video) >0:
 	screen.blit(text1, (50, 30))
 	pygame.display.update()
 	#time.sleep(0.5)
-
 while True:
 	#text1 = font.render('Play latest message or skip', True, (152,255,54))
 	#screen.blit(text1, (50, 260))
 	#pygame.display.update()
-
 	if GPIO.input(button1) == False:	# Play message
 		print('Initializing delayed start')
 

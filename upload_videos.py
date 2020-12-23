@@ -1,11 +1,57 @@
 ### upload_videos.py -- Andrew R Gross -- 2020-12-19
 
-### Header
-import os
-import stat
+### Libraries
+import pygame
 import time
+import cv2
+import RPi.GPIO as GPIO
+import glob
+#import numpy as np
+#from ffpyplayer.player import MediaPlayer
+#import vlc
+import io,sys,os,subprocess
+global process
+
+### Declare variables and assets
+## Images
+searching = pygame.image.load('/home/pi/Rocket-dashboard/Images/searching-for-transmission.png')
+play_latest = pygame.image.load('/home/pi/Rocket-dashboard/Images/new-message.png')
+proceed = pygame.image.load('/home/pi/Rocket-dashboard/Images/continue.png')
+
+
+
+def get_video_duration(path):
+        vidcapture = cv2.VideoCapture(path)
+        fps = vidcapture.get(cv2.CAP_PROP_FPS)
+        totalNoFrames = vidcapture.get(cv2.CAP_PROP_FRAME_COUNT);
+        durationInSeconds = float(totalNoFrames) / float(fps)
+        return(durationInSeconds)
+
+## Videos
+full_video_list = glob.glob('/home/pi/Rocket-dashboard/Videos/*')
+full_video_list.sort(key=os.path.getmtime, reverse = True)
+video_list = full_video_list[0:4]
+print(video_list)
+
+## Pins
+button1 = 2
+button2 = 3
+
+GPIO.setmode(GPIO.BCM)
+#GPIO.setwarnings(False)
+GPIO.setup(button1,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(button2,GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+screenstate = 0
+
+
+print('Setup complete. Running test')
+
+
 
 ### Main program
+
+
 
 print('Checking for new videos')
 
